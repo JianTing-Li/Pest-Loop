@@ -47,7 +47,7 @@ function MatchBar({ matched, total, needsReview }) {
   );
 }
 
-export default function ClientList({ index, meta, onSelect }) {
+export default function ClientList({ index, meta, onSelect, selectedBuildingId }) {
   const [result, setResult] = useState(null);
   const [isSample, setIsSample] = useState(false);
   const [busy, setBusy] = useState(null);
@@ -212,7 +212,7 @@ export default function ClientList({ index, meta, onSelect }) {
         <>
           <MatchBar matched={result.matched.length} total={result.total} needsReview={result.needsReview.length} />
           <Filters filters={filters} onChange={setFilters} shown={visible.length} total={prepared.length} />
-          <ResultsTable rows={visible} onSelect={onSelect} />
+          <ResultsTable rows={visible} onSelect={onSelect} selectedBuildingId={selectedBuildingId} />
           <p className="caveat">
             <strong>How the order is decided.</strong> Priority is the repeat rate adjusted for how many cases it
             rests on, multiplied by a recency weight (×1.00 within 12 months, ×0.85 at 1–2 years, ×0.70 beyond).

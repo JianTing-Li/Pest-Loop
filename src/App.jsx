@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { loadData } from './lib/data.js';
 import AddressSearch from './components/AddressSearch.jsx';
 import ClientList from './components/ClientList.jsx';
@@ -8,12 +8,24 @@ export default function App() {
   const [state, setState] = useState({ status: 'loading' });
   const [tab, setTab] = useState('search');
   const [selected, setSelected] = useState(null);
+  const detailRef = useRef(null);
 
   useEffect(() => {
     loadData()
       .then(({ buildings, meta, index }) => setState({ status: 'ready', buildings, meta, index }))
       .catch((err) => setState({ status: 'error', message: err.message }));
   }, []);
+
+  // Scroll the detail view into frame whenever a new selection is made — on a
+  // longer client list the card renders well below the fold, so without this
+  // a row click looks like it did nothing. `scroll-margin-top` on `.card`
+  // (styles.css) gives the landing position breathing room instead of
+  // slamming the header flush against the viewport edge.
+  useEffect(() => {
+    if (!selected || !detailRef.current) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    detailRef.current.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+  }, [selected]);
 
   if (state.status === 'loading') {
     return (
@@ -91,11 +103,12 @@ export default function App() {
         {tab === 'search' ? (
           <AddressSearch index={index} meta={meta} onSelect={(b) => select(b)} />
         ) : (
-          <ClientList index={index} meta={meta} onSelect={select} />
+          <ClientList index={index} meta={meta} onSelect={select} selectedBuildingId={selected?.building?.id} />
         )}
 
         {selected ? (
           <BuildingCard
+            rootRef={detailRef}
             building={selected.building}
             clientName={selected.clientName}
             meta={meta}

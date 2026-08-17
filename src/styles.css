@@ -490,6 +490,16 @@ body {
 .tr--low td { color: var(--text-tertiary); }
 .tr--low .td--client, .tr--low .td--addr, .tr--low .td--strong { color: var(--text-tertiary); font-weight: var(--weight-medium); }
 
+/* The row behind the open detail view — set on click, persists independent of
+   hover, and survives sorting/filtering since it's matched by building id
+   rather than row position. Background lives on `td` (not `tr`) so it paints
+   over the row's own hover background rather than fighting it, same trick
+   `.tr--low` already uses. The inset box-shadow gives a crisp left accent bar
+   without the border-collapse quirks a real `border-left` on a table row has. */
+.tr--selected td { background: var(--accent-subtle); }
+.tr--selected td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.tr--selected .td--client { color: var(--accent); }
+
 .table--review td, .table--review th { white-space: normal; }
 .table--review td { text-align: left; }
 
@@ -508,6 +518,9 @@ body {
   margin-top: var(--space-6); padding: var(--space-6);
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+  /* Landing spot for the scrollIntoView() in App.jsx — keeps the header off
+     the very top edge of the viewport instead of flush against it. */
+  scroll-margin-top: var(--space-6);
 }
 .card__head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-5); }
 .card__client {

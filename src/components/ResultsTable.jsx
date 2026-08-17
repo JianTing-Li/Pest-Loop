@@ -29,7 +29,7 @@ const COLUMNS = [
   { key: 'admin', label: 'Admin filings', help: 'Bedbug filing/posting paperwork — never part of the physical signal or the ranking' },
 ];
 
-export default function ResultsTable({ rows, onSelect }) {
+export default function ResultsTable({ rows, onSelect, selectedBuildingId }) {
   const [sort, setSort] = useState({ key: 'rank', dir: 'asc' });
 
   const sorted = useMemo(() => {
@@ -96,10 +96,15 @@ export default function ResultsTable({ rows, onSelect }) {
           {sorted.map((entry, i) => {
             const { row, stats, admin, rank, concentration } = entry;
             const unranked = rank.status !== 'ranked';
+            const isSelected = row.building.id === selectedBuildingId;
+            const rowClass = [unranked ? 'tr--low' : null, isSelected ? 'tr--selected' : null]
+              .filter(Boolean)
+              .join(' ');
             return (
               <tr
                 key={`${row.client_name}-${row.building.id}`}
-                className={unranked ? 'tr--low' : undefined}
+                className={rowClass || undefined}
+                aria-selected={isSelected}
                 onClick={() => onSelect(row.building, row.client_name)}
               >
                 <td className="td--rank">{rank.status === 'ranked' && sort.key === 'rank' ? i + 1 : '·'}</td>

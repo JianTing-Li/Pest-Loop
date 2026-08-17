@@ -20,14 +20,14 @@ function Metric({ label, value, hint, muted }) {
   );
 }
 
-export default function BuildingCard({ building, meta, clientName, onClose }) {
+export default function BuildingCard({ building, meta, clientName, onClose, rootRef }) {
   const floor = meta?.volumeFloor ?? 8;
   const phys = statsOf(building, 'physical', floor);
   const admin = statsOf(building, 'administrative', floor);
   const rank = priorityOf(phys, { floor, asOf: meta?.dataAsOf });
 
   return (
-    <section className="card">
+    <section className="card" ref={rootRef}>
       <header className="card__head">
         <div>
           {clientName ? <div className="card__client">{clientName}</div> : null}

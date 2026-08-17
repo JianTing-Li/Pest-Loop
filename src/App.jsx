@@ -44,7 +44,18 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <div>
-          <h1 className="topbar__title">PestLoop</h1>
+          <div className="brand">
+            {/* Same loop motif as the favicon (index.html), reused here so the
+                browser tab and the header read as one consistent mark. */}
+            <svg className="brand__icon" viewBox="0 0 32 32" aria-hidden="true">
+              <path d="M16 6a10 10 0 0 1 9.8 8h-3.1A7 7 0 0 0 16 9a7 7 0 0 0-6.9 6H12l-4.5 5L3 15h2.6A10 10 0 0 1 16 6Z" />
+              <path d="M16 26a10 10 0 0 1-9.8-8h3.1A7 7 0 0 0 16 23a7 7 0 0 0 6.9-6H20l4.5-5L29 17h-2.6A10 10 0 0 1 16 26Z" />
+            </svg>
+            <h1 className="topbar__title">
+              <span className="topbar__title-pest">Pest</span>
+              <span className="topbar__title-loop">Loop</span>
+            </h1>
+          </div>
           <p className="topbar__sub">
             Recurring pest violations at your multifamily accounts — Bronx HPD records,{' '}
             {meta.since} to {meta.dataAsOf}.

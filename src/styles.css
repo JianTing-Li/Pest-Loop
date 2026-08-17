@@ -102,7 +102,11 @@
 
     --text: #e9ebe8;
     --text-secondary: #a2a8a3;
-    --text-tertiary: #767c78;
+    /* Raised from #767c78 (4.34:1 against --bg, 3.73:1 against badge
+       background) — both failed WCAG AA's 4.5:1 for text this size. This is
+       the color the "not enough data" / low-confidence badges and the footer
+       disclaimer render in, so it needed to move, not just the badge. */
+    --text-tertiary: #868c88;
 
     --accent: #59b98a;
     --accent-hover: #6ecb9c;
@@ -457,27 +461,73 @@ body {
   color: var(--text-secondary);
 }
 .ta-left { text-align: left !important; }
-.table tbody tr { cursor: pointer; transition: background var(--transition-fast); }
-.table tbody tr:hover { background: var(--surface-hover); }
+/* A faint always-on left rail signals "this whole row is one clickable unit"
+   before the first hover — reuses the left-bar language already established
+   for selected/paired rows elsewhere, rather than inventing a new motif. */
+.table tbody tr {
+  cursor: pointer; transition: background var(--transition-fast);
+  border-left: 2px solid transparent;
+}
+.table tbody tr:hover { background: var(--surface-hover); border-left-color: var(--border-strong); }
+/* Keyboard focus on a row: box-shadow (not border) so it isn't subject to
+   border-collapse quirks, same reasoning as the selected-row accent bar. */
+.table tbody tr:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1px var(--accent), var(--focus-ring);
+}
 
 /* Long account names and addresses are truncated rather than allowed to push
-   the right-hand columns off screen; the full value stays in the title. */
-.td--client {
-  font-weight: var(--weight-semibold); color: var(--text); font-size: var(--text-base);
-  max-width: 185px; overflow: hidden; text-overflow: ellipsis;
-}
-.td--addr { color: var(--text); max-width: 195px; overflow: hidden; text-overflow: ellipsis; }
-.td--strong { color: var(--text); font-weight: var(--weight-semibold); }
-.td--pests { color: var(--text-secondary); max-width: 145px; overflow: hidden; text-overflow: ellipsis; }
-.td--admin { color: var(--text-tertiary); }
-.td--adj { color: var(--text); font-weight: var(--weight-medium); }
-.td--span { color: var(--text-secondary); }
+   the right-hand columns off screen. A custom tooltip (reusing the same
+   .thtip pattern built for column headers) reveals the full value on hover —
+   deliberately NOT keyboard-focusable here: the row itself is already the one
+   keyboard stop per row (see .table tbody tr:focus-visible above), and adding
+   3 more tab stops per row just to reveal a tooltip would make a 20+ row table
+   painful to tab through. Mouse users get it; keyboard users get the row. */
+.td--client .thtip, .td--addr .thtip { display: block; }
+/* Truncation lives on this inner span, not on .thtip itself — .thtip is also
+   the containing block for .thtip__bubble (a sibling of this span, not a
+   child), so keeping overflow:hidden off .thtip is what lets the bubble
+   render outside the clipped text instead of being clipped along with it. */
+.td--client .thtip__text, .td--addr .thtip__text { display: block; overflow: hidden; text-overflow: ellipsis; }
+.td--client .thtip__bubble, .td--addr .thtip__bubble { left: 0; transform: translateY(4px); text-transform: none; }
+
+/* `.table td` (above) sets color at specificity (0,1,1) — a class plus an
+   element. Every rule below was originally a lone class at (0,1,0), which
+   CSS specificity rules always lose to (0,1,1) regardless of source order —
+   so every one of these color overrides except `.td--pests`/`.td--span`
+   (which happen to target the same color the base rule already sets) has
+   been silently no-op'ing since it was written: account names, addresses,
+   admin counts, and rank all rendered in the generic secondary gray instead
+   of their intended color. Qualifying with `.table td` (specificity 0,2,1)
+   makes the override unambiguous rather than relying on source-order luck. */
+/* max-width constrains the column; truncation itself (overflow/ellipsis) lives
+   on the inner .thtip span, not here — an overflow:hidden on the <td> would
+   clip the tooltip bubble too, since position:absolute escapes normal-flow
+   layout but not an ancestor's overflow clipping. Found this by checking why
+   a hover tooltip reported opacity:1 with a correct bounding rect yet still
+   didn't appear in a screenshot — the geometry was right, an ancestor was
+   just clipping it away. */
+.table td.td--client { font-weight: var(--weight-semibold); color: var(--text); font-size: var(--text-base); max-width: 185px; }
+.table td.td--addr { color: var(--text); max-width: 195px; }
+.table td.td--strong { color: var(--text); font-weight: var(--weight-semibold); }
+.table td.td--pests { color: var(--text-secondary); max-width: 145px; overflow: hidden; text-overflow: ellipsis; }
+.table td.td--admin { color: var(--text-tertiary); }
+/* Repeat rate is the number an account manager should trust and act on;
+   adjusted rate is supporting statistical context for the ranking, not a
+   second answer to the same question. Before this, both rendered at equal
+   weight with no visual cue for which one to read first. */
+.table td.td--rate { color: var(--text); font-weight: var(--weight-semibold); }
+.table td.td--adj { color: var(--text-tertiary); font-weight: var(--weight-normal); font-size: var(--text-xs); }
+.table td.td--span { color: var(--text-secondary); }
 
 .th--rank, .td--rank { width: 34px; padding-left: var(--space-4) !important; padding-right: var(--space-1) !important; }
-.td--rank { color: var(--text-tertiary); font-weight: var(--weight-semibold); }
+.table td.td--rank { color: var(--text-tertiary); font-weight: var(--weight-semibold); }
 
-/* Recency band marker beside the last-repeat date. Colour carries meaning here:
-   how current the pattern is directly scales the priority. */
+/* Recency band marker beside the last-repeat date. Colour scales with the
+   priority weight, but color was previously the ONLY channel carrying that
+   meaning — a 6px dot with a hover-only title. `.dot__label` adds an
+   always-visible word alongside it so the band reads without relying on hue
+   discrimination or a hover. */
 .dot {
   display: inline-block; width: 6px; height: 6px; margin-left: var(--space-2);
   border-radius: var(--radius-full); vertical-align: middle;
@@ -485,20 +535,29 @@ body {
 .dot--active { background: var(--accent); }
 .dot--dormant { background: var(--warning); }
 .dot--historic { background: var(--text-tertiary); }
+.dot__label { margin-left: 3px; font-size: var(--text-2xs); color: var(--text-tertiary); vertical-align: middle; }
 
-/* Below the volume floor: dimmed in place, never hidden or moved. */
-.tr--low td { color: var(--text-tertiary); }
-.tr--low .td--client, .tr--low .td--addr, .tr--low .td--strong { color: var(--text-tertiary); font-weight: var(--weight-medium); }
+/* Below the volume floor: dimmed in place, never hidden or moved.
+   Qualified with `tr`+`td` elements (specificity 0,2,2) so this reliably beats
+   the `.table td.td--client` etc. rules above (0,2,1) — without this, a
+   below-floor row's account/address/repeats cells would render at full
+   brightness instead of dimmed, since those rules are now more specific than
+   a bare `.tr--low .td--client` would be. */
+tr.tr--low td { color: var(--text-tertiary); }
+tr.tr--low td.td--client, tr.tr--low td.td--addr, tr.tr--low td.td--strong {
+  color: var(--text-tertiary); font-weight: var(--weight-medium);
+}
 
 /* The row behind the open detail view — set on click, persists independent of
    hover, and survives sorting/filtering since it's matched by building id
    rather than row position. Background lives on `td` (not `tr`) so it paints
    over the row's own hover background rather than fighting it, same trick
    `.tr--low` already uses. The inset box-shadow gives a crisp left accent bar
-   without the border-collapse quirks a real `border-left` on a table row has. */
+   without the border-collapse quirks a real `border-left` on a table row has.
+   Same specificity-qualification reasoning as `.tr--low` above. */
 .tr--selected td { background: var(--accent-subtle); }
 .tr--selected td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
-.tr--selected .td--client { color: var(--accent); }
+tr.tr--selected td.td--client { color: var(--accent); }
 
 .table--review td, .table--review th { white-space: normal; }
 .table--review td { text-align: left; }
@@ -604,7 +663,10 @@ body {
 
 .tl-row__status { margin-top: 2px; font-size: var(--text-xs); }
 .tl-row__status--closed { color: var(--text-secondary); }
-.tl-row__status--open { color: var(--accent); }
+/* Neutral, not accent: "open" is unresolved, not a success state, and using
+   the same green family as the pair tints (below) made ordinary open rows
+   compete visually with the highlighted repeat pairs they sit next to. */
+.tl-row__status--open { color: var(--text-secondary); }
 .tl-row__status--pending { color: var(--text-tertiary); }
 .tl-row__status--uncertain { color: var(--warning); }
 
@@ -613,12 +675,21 @@ body {
   color: var(--text-secondary);
 }
 
-/* Each repeat pair gets a colored left rail + faint tint so the two rows that
-   belong together stay identifiable even with several pairs in one timeline. */
-.tl-row--pair-a { border-left-color: var(--pair-a); background: color-mix(in srgb, var(--pair-a) 7%, transparent); }
-.tl-row--pair-b { border-left-color: var(--pair-b); background: color-mix(in srgb, var(--pair-b) 7%, transparent); }
-.tl-row--pair-c { border-left-color: var(--pair-c); background: color-mix(in srgb, var(--pair-c) 7%, transparent); }
-.tl-row--pair-d { border-left-color: var(--pair-d); background: color-mix(in srgb, var(--pair-d) 7%, transparent); }
+/* A timeline can be dozens of rows long with only a handful actually part of a
+   repeat pair — the point of this view. Dimming the unpaired majority (rather
+   than only brightening the pairs) is what makes the highlighted pairs read as
+   foreground instead of getting lost in a wall of near-identical open rows. */
+.tl-row--nopair .tl-row__label { color: var(--text-secondary); }
+.tl-row--nopair .tl-row__apt { color: var(--text-tertiary); }
+
+/* Each repeat pair gets a colored left rail + tint so the two rows that belong
+   together stay identifiable even with several pairs in one timeline. Tint and
+   rail both strengthened from the original 7%/3px so pairs pop clearly against
+   the now-dimmer unpaired rows rather than reading as a similarly faint tint. */
+.tl-row--pair-a { border-left-color: var(--pair-a); border-left-width: 4px; background: color-mix(in srgb, var(--pair-a) 11%, transparent); }
+.tl-row--pair-b { border-left-color: var(--pair-b); border-left-width: 4px; background: color-mix(in srgb, var(--pair-b) 11%, transparent); }
+.tl-row--pair-c { border-left-color: var(--pair-c); border-left-width: 4px; background: color-mix(in srgb, var(--pair-c) 11%, transparent); }
+.tl-row--pair-d { border-left-color: var(--pair-d); border-left-width: 4px; background: color-mix(in srgb, var(--pair-d) 11%, transparent); }
 .tl-row--pair-a .tl-row__pairnote { color: var(--pair-a); }
 .tl-row--pair-b .tl-row__pairnote { color: var(--pair-b); }
 .tl-row--pair-c .tl-row__pairnote { color: var(--pair-c); }

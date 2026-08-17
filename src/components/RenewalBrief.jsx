@@ -43,7 +43,10 @@ export default function RenewalBrief({ building, clientName, meta }) {
   return (
     <div className="brief">
       <div className="brief__toolbar">
-        <button type="button" className="btn btn--secondary" onClick={copy}>
+        {/* Filled/primary, not secondary — this is the action someone actually
+            uses (grab text for an email); .txt and PDF are occasional exports
+            and shouldn't visually compete with it for attention. */}
+        <button type="button" className="btn" onClick={copy}>
           {status === 'copied' ? 'Copied' : 'Copy brief'}
         </button>
         <button type="button" className="btn btn--ghost" onClick={() => downloadText(briefFilename({ building, clientName }, 'txt'), text)}>

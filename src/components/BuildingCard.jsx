@@ -1,12 +1,14 @@
 /**
- * Single-building summary. Reached from the address search, or by clicking a
- * row in the client table. Phase 3 replaces this with the full timeline view;
- * for now it shows the same underlying numbers without the violation history.
+ * Single-building detail view. Reached from the address search, or by
+ * clicking a row in the client table — same component either way, so the two
+ * entry points never diverge.
  */
 
 import { statsOf, formatRate, formatDate, pestSummary, displayAddress } from '../lib/format.js';
 import { priorityOf } from '../lib/ranking.js';
 import { ADMIN_MEANING, RepeatCaveat } from './Caveat.jsx';
+import Timeline from './Timeline.jsx';
+import RenewalBrief from './RenewalBrief.jsx';
 
 function Metric({ label, value, hint, muted }) {
   return (
@@ -101,6 +103,9 @@ export default function BuildingCard({ building, meta, clientName, onClose }) {
         </>
       )}
 
+      <h3 className="card__section">Renewal brief</h3>
+      <RenewalBrief building={building} clientName={clientName} meta={meta} />
+
       <h3 className="card__section">Administrative records (tracked separately)</h3>
       {admin.total === 0 ? (
         <p className="empty">No bedbug filing or posting records for this building.</p>
@@ -111,6 +116,9 @@ export default function BuildingCard({ building, meta, clientName, onClose }) {
         </div>
       )}
       <p className="caveat">{ADMIN_MEANING}</p>
+
+      <h3 className="card__section">Violation timeline</h3>
+      <Timeline buildingId={building.id} />
     </section>
   );
 }

@@ -7,7 +7,7 @@
  * become a wrong number on screen.
  */
 
-import { PEST_LABELS } from '../../scripts/violation-codes.js';
+import { PEST_LABELS, codeInfo } from '../../scripts/violation-codes.js';
 
 export { PEST_LABELS };
 
@@ -66,6 +66,34 @@ export function pestSummary(stats, { short = false, max = Infinity } = {}) {
   const names = entries.map(([pest]) => (short ? PEST_SHORT[pest] : PEST_LABELS[pest]) ?? pest);
   if (names.length <= max) return names.join(', ');
   return `${names.slice(0, max).join(', ')} +${names.length - max}`;
+}
+
+/** "Roach infestation" for a violation ordernumber, falling back to the pest name. */
+export function violationLabel(row) {
+  return codeInfo(row.code)?.label ?? PEST_LABELS[row.pest] ?? `Violation ${row.code}`;
+}
+
+const STATUS_LABELS = {
+  classifiable: { label: 'Closed — certified corrected', tone: 'closed' },
+  uncertified: { label: 'Closed — no certification on file', tone: 'uncertain' },
+  censored: { label: 'Closed — too recent to classify', tone: 'pending' },
+  open: { label: 'Open', tone: 'open' },
+};
+
+/**
+ * Plain-language status + a tone the UI can color, for one timeline row.
+ *
+ * 'unlocatable' (no parseable apartment) is assigned before the open/closed
+ * split in the fetch script, so it can land on either — `row.open` is the
+ * authoritative signal for which, not an assumption from the state name.
+ */
+export function violationStatus(row) {
+  if (row.state === 'unlocatable') {
+    return row.open
+      ? { label: 'Open — unit not recorded', tone: 'open' }
+      : { label: 'Closed — unit not recorded', tone: 'uncertain' };
+  }
+  return STATUS_LABELS[row.state] ?? { label: row.status ?? 'Unknown status', tone: 'uncertain' };
 }
 
 /** Title-case a HOUSE + STREET string for display without losing the number. */

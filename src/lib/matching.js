@@ -103,6 +103,65 @@ export function suggest(index, input, limit = 8) {
 }
 
 /**
+ * Autosuggest index — one slim entry per building (canonical address only, not
+ * every historical spelling variant `matchKeys` carries), with house/street
+ * pre-normalized once so every keystroke only does cheap string comparisons,
+ * not re-parsing 22k+ addresses. Derived from the already-loaded `buildings`
+ * array rather than fetched separately — `buildings.json` already carries
+ * address/zip/nta on every record and is downloaded before this ever runs, so
+ * a second file would be pure additional bytes for data already in memory.
+ *
+ * This trades a sliver of completeness for simplicity: a building known only
+ * under an old alternate spelling won't surface here. `lookupAddress` (full
+ * `matchKeys` variant support) is unaffected and remains the authoritative
+ * path for the Look-up button and Enter-with-nothing-highlighted.
+ */
+export function buildStreetIndex(buildings) {
+  return buildings.map((b) => {
+    const { street } = parseAddress(b.address);
+    return {
+      id: b.id,
+      address: b.address,
+      zip: b.zip ?? null,
+      nta: b.nta ?? null,
+      // parseAddress already normalizes the house number internally.
+      house: parseAddress(b.address).houseNumber,
+      street: normalizeStreet(street),
+    };
+  });
+}
+
+/**
+ * Suggestions for the autosuggest dropdown — unlike `suggest()` above, this
+ * does NOT require a house number first: "Franklin" alone should surface
+ * "1229 Franklin Ave". If a house number IS present it must match exactly
+ * (same rule `suggest()` already uses); only the street portion is
+ * prefix/contains-matched. "Prefix-first but not prefix-only": buildings whose
+ * street starts with the typed text rank ahead of ones where it merely
+ * appears elsewhere in the name.
+ *
+ * @returns {{matches: object[], total: number}} `total` is the full match
+ *   count before capping to `limit`, so the caller can show "N more — keep
+ *   typing to narrow" when the list was truncated.
+ */
+export function suggestAddresses(streetIndex, input, limit = 8) {
+  const { houseNumber, street } = parseAddress(input);
+  const normStreet = normalizeStreet(street);
+  if (!normStreet) return { matches: [], total: 0 };
+
+  const pool = houseNumber ? streetIndex.filter((e) => e.house === houseNumber) : streetIndex;
+
+  const prefixHits = [];
+  const containsHits = [];
+  for (const e of pool) {
+    if (e.street.startsWith(normStreet)) prefixHits.push(e);
+    else if (e.street.includes(normStreet)) containsHits.push(e);
+  }
+  const ranked = prefixHits.concat(containsHits);
+  return { matches: ranked.slice(0, limit), total: ranked.length };
+}
+
+/**
  * Batch-match a parsed client list. Rows resolve to exactly one building, or
  * they land in `needsReview` — silently dropping a row would hide a match
  * failure, which is the opposite of what an account manager needs.

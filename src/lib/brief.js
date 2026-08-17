@@ -102,3 +102,14 @@ export function generateBrief({ building, clientName, meta }) {
 
   return parts.join('\n\n');
 }
+
+/** A filesystem-safe filename for the downloaded brief, e.g. "pestloop-brief-riverside-property-group.txt". */
+export function briefFilename({ building, clientName }, extension) {
+  const base = clientName || building.address || `building-${building.id}`;
+  const slug = base
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
+  return `pestloop-brief-${slug || building.id}.${extension}`;
+}

@@ -632,3 +632,24 @@ body {
 }
 .brief__para:first-child { font-weight: var(--weight-semibold); }
 .brief__para:last-child { margin-bottom: 0; }
+
+/* --- print: scope output to just the open brief ----------------------------
+   `visibility` rather than `display` so descendant layout (flex/grid children
+   inside .brief) isn't disturbed by the hide/show toggle — the well-established
+   pattern for "print only this one element" out of a larger page. */
+@media print {
+  @page { margin: 0.75in; }
+
+  /* Paper should read the same regardless of which screen theme was active —
+     force light and pure white rather than inheriting a dark-mode background. */
+  body { background: #fff !important; }
+
+  body * { visibility: hidden; }
+  .brief, .brief * { visibility: visible; }
+  .brief {
+    position: absolute; top: 0; left: 0; width: 100%;
+    border: 0; box-shadow: none; background: #fff; padding: 0;
+  }
+  .brief__toolbar { display: none; } /* the copy/download/print buttons themselves don't belong on paper */
+  .brief__para { color: #000; font-size: 11pt; }
+}

@@ -1,0 +1,16 @@
+# Environment variables — never commit
+.env
+.env.local
+
+# Raw API pull cache
+.cache/
+data-raw/
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# OS junk
+.DS_Store

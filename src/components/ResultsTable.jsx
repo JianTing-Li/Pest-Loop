@@ -80,12 +80,14 @@ export default function ResultsTable({ rows, onSelect }) {
             {COLUMNS.map((c) => (
               <th
                 key={c.key}
-                title={c.help}
                 className={`${c.align === 'left' ? 'ta-left' : 'ta-right'}${sort.key === c.key ? ' th--sorted' : ''}${c.key === 'rank' ? ' th--rank' : ''}`}
                 onClick={() => toggle(c.key)}
               >
-                {c.label}
-                <span className="th__arrow">{sort.key === c.key ? (sort.dir === 'desc' ? '▼' : '▲') : ''}</span>
+                <span className="thtip" tabIndex={0}>
+                  {c.label}
+                  <span className="th__arrow">{sort.key === c.key ? (sort.dir === 'desc' ? '▼' : '▲') : ''}</span>
+                  <span className="thtip__bubble" role="tooltip">{c.help}</span>
+                </span>
               </th>
             ))}
           </tr>

@@ -398,6 +398,34 @@ body {
 .th--sorted { color: var(--accent); }
 .th__arrow { display: inline-block; width: 11px; font-size: 8px; vertical-align: middle; }
 
+/* Custom header tooltip — replaces native `title` (slow, tiny, easy to miss)
+   with a fast, styled bubble built from the same design tokens. */
+.thtip { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
+
+.thtip__bubble {
+  position: absolute; top: 100%; left: 50%; transform: translateX(-50%) translateY(4px);
+  margin-top: var(--space-2);
+  width: max-content; max-width: 240px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  font-size: var(--text-xs); font-weight: var(--weight-normal);
+  text-transform: none; letter-spacing: normal; white-space: normal; text-align: left;
+  line-height: var(--leading-relaxed);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity var(--transition-fast), visibility var(--transition-fast);
+  z-index: 5;
+}
+
+.thtip:hover .thtip__bubble,
+.thtip:focus-within .thtip__bubble { opacity: 1; visibility: visible; }
+
+/* Centered bubbles overhang the viewport on the first/last header — anchor
+   those to the inside edge instead of the center. */
+.table thead tr th:first-child .thtip__bubble { left: 0; transform: translateY(4px); }
+.table thead tr th:last-child .thtip__bubble { left: auto; right: 0; transform: translateY(4px); }
+
 .table td {
   padding: var(--space-2) var(--space-3);
   text-align: right; white-space: nowrap;

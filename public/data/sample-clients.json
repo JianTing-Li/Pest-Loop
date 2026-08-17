@@ -1,0 +1,105 @@
+{
+  "note": "SAMPLE DATA — real Bronx buildings, fictional client names. Not a real client roster.",
+  "clients": [
+    {
+      "client_name": "Riverside Property Group",
+      "address": "1334 LOUIS NINE BOULEVARD",
+      "zip": "10459"
+    },
+    {
+      "client_name": "Kestrel Residential",
+      "address": "737 EAST 219 STREET",
+      "zip": "10467"
+    },
+    {
+      "client_name": "Halstead Bay Holdings",
+      "address": "1260 CLAY AVENUE",
+      "zip": "10456"
+    },
+    {
+      "client_name": "Northpoint Asset Partners",
+      "address": "1025 BOYNTON AVENUE",
+      "zip": "10472"
+    },
+    {
+      "client_name": "Grand Concourse Management",
+      "address": "1120 FOX STREET",
+      "zip": "10459"
+    },
+    {
+      "client_name": "Alder & Vine Properties",
+      "address": "341 EAST 146 STREET",
+      "zip": "10451"
+    },
+    {
+      "client_name": "Meridian Housing Partners",
+      "address": "3435 OLINVILLE AVENUE",
+      "zip": "10467"
+    },
+    {
+      "client_name": "Blue Harbor Realty Group",
+      "address": "3805 REVIEW PLACE",
+      "zip": "10463"
+    },
+    {
+      "client_name": "Sutton Field Management",
+      "address": "10 RICHMAN PLAZA",
+      "zip": "10453"
+    },
+    {
+      "client_name": "Ironwood Residential Trust",
+      "address": "306 EAST 171 STREET",
+      "zip": "10457"
+    },
+    {
+      "client_name": "Larchmont Property Co",
+      "address": "2145 STARLING AVENUE",
+      "zip": "10462"
+    },
+    {
+      "client_name": "Copperleaf Estates",
+      "address": "1097 WALTON AVENUE",
+      "zip": "10452"
+    },
+    {
+      "client_name": "Whitestone Ridge Partners",
+      "address": "115 EAST MOSHOLU PARKWAY NORTH",
+      "zip": "10467"
+    },
+    {
+      "client_name": "Marlow Street Holdings",
+      "address": "2028 CROSS BRONX EXPRESSWAY",
+      "zip": "10472"
+    },
+    {
+      "client_name": "Vantage Point Residential",
+      "address": "3535 ROCHAMBEAU AVENUE",
+      "zip": "10467"
+    },
+    {
+      "client_name": "Cedarbrook Property Group",
+      "address": "937 SUMMIT AVENUE",
+      "zip": "10452"
+    },
+    {
+      "client_name": "Fenwick Housing LLC",
+      "address": "1522 BRYANT AVENUE",
+      "zip": "10460"
+    },
+    {
+      "client_name": "Orchard Hill Management",
+      "address": "1812 VYSE AVENUE",
+      "zip": "10460"
+    },
+    {
+      "client_name": "Beacon & Pine Realty",
+      "address": "809 ALLERTON AVENUE",
+      "zip": "10467"
+    },
+    {
+      "client_name": "Stonebridge Residential",
+      "address": "711 EAST 226 STREET",
+      "zip": "10466"
+    }
+  ]
+}

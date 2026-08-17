@@ -1,0 +1,675 @@
+/* ==========================================================================
+   PestLoop design system
+   A working tool for someone under time pressure: density and scannability
+   first, decoration never. Separation comes from tone and subtle elevation
+   rather than a border on every surface.
+   ========================================================================== */
+
+/* --- tokens --------------------------------------------------------------- */
+
+:root {
+  /* type: one scale, no ad-hoc sizes */
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  --text-2xs: 10.5px;
+  --text-xs: 11.5px;
+  --text-sm: 12.5px;
+  --text-base: 13.5px;
+  --text-md: 15px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.6;
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  --tracking-wide: 0.04em;
+  --tracking-tight: -0.011em;
+
+  /* spacing: 4px base */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  --radius-sm: 4px;
+  --radius-md: 7px;
+  --radius-lg: 11px;
+  --radius-full: 999px;
+
+  /* motion: only where it aids comprehension */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 90ms var(--ease);
+  --transition-base: 150ms var(--ease);
+
+  /* neutrals — warm, low-chroma */
+  --bg: #fafaf9;
+  --surface: #ffffff;
+  --surface-subtle: #f4f4f2;
+  --surface-hover: #f0f2f0;
+  --border: #e7e7e3;
+  --border-strong: #d6d6d1;
+
+  --text: #1a1c1a;
+  --text-secondary: #5d625d;
+  --text-tertiary: #8b908b;
+
+  /* one accent */
+  --accent: #14724a;
+  --accent-hover: #0f5c3b;
+  --accent-fg: #ffffff;
+  --accent-subtle: #ecf4ef;
+  --accent-border: #bcdccb;
+
+  /* semantic — used only where the color carries meaning */
+  --warning: #8a5116;
+  --warning-subtle: #fdf3e6;
+  --warning-border: #eccfa4;
+  --info-subtle: #eef1f6;
+  --info-border: #d3dbe8;
+
+  --shadow-sm: 0 1px 2px rgba(20, 22, 20, 0.05), 0 1px 3px rgba(20, 22, 20, 0.04);
+  --shadow-md: 0 2px 4px rgba(20, 22, 20, 0.04), 0 8px 20px -6px rgba(20, 22, 20, 0.10);
+  --focus-ring: 0 0 0 3px rgba(20, 114, 74, 0.28);
+
+  /* Timeline pair grouping only — distinguishing which repeat pairs go
+     together carries real meaning, so a small rotating set is justified
+     rather than one more use of the semantic accent/warning colors. */
+  --pair-a: #3b6fb0;
+  --pair-b: #8457c9;
+  --pair-c: #2f8f82;
+  --pair-d: #b4682f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121413;
+    --surface: #191c1a;
+    --surface-subtle: #20231f;
+    --surface-hover: #232722;
+    --border: #2b2f2c;
+    --border-strong: #3a3f3b;
+
+    --text: #e9ebe8;
+    --text-secondary: #a2a8a3;
+    --text-tertiary: #767c78;
+
+    --accent: #59b98a;
+    --accent-hover: #6ecb9c;
+    --accent-fg: #0c1a13;
+    --accent-subtle: #17271f;
+    --accent-border: #2a4636;
+
+    --warning: #dda66a;
+    --warning-subtle: #241d13;
+    --warning-border: #3d3120;
+    --info-subtle: #1a1f27;
+    --info-border: #2a3240;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.3), 0 8px 24px -6px rgba(0, 0, 0, 0.5);
+    --focus-ring: 0 0 0 3px rgba(89, 185, 138, 0.32);
+
+    --pair-a: #7aa7dd;
+    --pair-b: #b39ae0;
+    --pair-c: #6cc4b7;
+    --pair-d: #dd9c62;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  letter-spacing: var(--tracking-tight);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Every interactive element gets the same visible keyboard ring. */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+
+.app { max-width: 1560px; margin: 0 auto; padding: var(--space-6) var(--space-6) var(--space-12); }
+.hidden { display: none; }
+.mono { font-family: var(--font-mono); }
+
+/* Data figures line up column to column. */
+.tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+/* --- top bar -------------------------------------------------------------- */
+
+.topbar {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: var(--space-6); flex-wrap: wrap;
+  padding-bottom: var(--space-4);
+}
+.brand { display: flex; align-items: center; gap: var(--space-2); }
+.brand__icon { width: 26px; height: 26px; flex: none; fill: var(--accent); }
+
+.topbar__title {
+  margin: 0; font-size: 25px; font-weight: var(--weight-semibold);
+  letter-spacing: -0.025em; line-height: var(--leading-tight);
+}
+/* Two-tone wordmark, echoing the icon: a deliberate seam at the compound-word
+   boundary rather than a flat, single-color page heading. */
+.topbar__title-pest { color: var(--text); }
+.topbar__title-loop { color: var(--accent); }
+.topbar__sub { margin: var(--space-1) 0 0; color: var(--text-secondary); font-size: var(--text-sm); }
+.topbar__stats {
+  display: flex; gap: var(--space-4); color: var(--text-tertiary);
+  font-size: var(--text-xs); font-variant-numeric: tabular-nums;
+}
+
+/* --- tabs ----------------------------------------------------------------- */
+
+.tabs {
+  display: flex; gap: var(--space-1);
+  margin: 0 0 var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  border: 0; background: none; cursor: pointer;
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  margin-bottom: -1px;
+  color: var(--text-secondary); font-family: inherit; font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  border-bottom: 2px solid transparent;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+.tab:hover { color: var(--text); }
+.tab--on { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* --- buttons -------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  border: 1px solid transparent; background: var(--accent); color: var(--accent-fg);
+  padding: var(--space-2) var(--space-4); border-radius: var(--radius-md);
+  font-family: inherit; font-size: var(--text-sm); font-weight: var(--weight-medium);
+  cursor: pointer; white-space: nowrap;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+.btn:hover { background: var(--accent-hover); }
+.btn:disabled { opacity: 0.55; cursor: default; }
+.btn--secondary { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
+.btn--secondary:hover { background: var(--surface-hover); border-color: var(--text-tertiary); }
+.btn--ghost { background: none; color: var(--text-secondary); border-color: var(--border); }
+.btn--ghost:hover { background: var(--surface-hover); color: var(--text); }
+
+.linkbtn {
+  border: 0; background: none; padding: 0 var(--space-1);
+  color: var(--accent); font-family: inherit; font-size: var(--text-sm);
+  cursor: pointer; text-decoration: none; border-bottom: 1px solid var(--accent-border);
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+.linkbtn:hover { color: var(--accent-hover); border-bottom-color: currentColor; }
+
+/* --- panels --------------------------------------------------------------- */
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* --- search --------------------------------------------------------------- */
+
+.search {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+  padding: var(--space-5);
+}
+.search__label {
+  display: block; font-size: var(--text-sm); font-weight: var(--weight-semibold);
+  margin-bottom: var(--space-2);
+}
+.search__row { display: flex; gap: var(--space-2); }
+.search__input {
+  flex: 1; padding: var(--space-3) var(--space-4);
+  font-family: inherit; font-size: var(--text-base); color: var(--text);
+  background: var(--bg); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.search__input::placeholder { color: var(--text-tertiary); }
+.search__input:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus-ring); }
+.search__hint { margin: var(--space-3) 0 0; color: var(--text-secondary); font-size: var(--text-sm); }
+.search__examples {
+  margin-top: var(--space-3); display: flex; align-items: center; gap: var(--space-2);
+  flex-wrap: wrap; font-size: var(--text-sm); color: var(--text-tertiary);
+}
+
+/* --- suggestion list ------------------------------------------------------ */
+
+.hits {
+  margin-top: var(--space-3); background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md); overflow: hidden;
+}
+.hits__head {
+  padding: var(--space-2) var(--space-4); background: var(--surface-subtle);
+  font-size: var(--text-xs); color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+}
+.hit {
+  display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-4);
+  width: 100%; padding: var(--space-3) var(--space-4);
+  border: 0; border-top: 1px solid var(--border);
+  background: var(--surface); color: var(--text); font-family: inherit;
+  font-size: var(--text-sm); text-align: left; cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.hit:first-child { border-top: 0; }
+.hit:hover { background: var(--accent-subtle); }
+.hit__addr { font-weight: var(--weight-medium); }
+.hit__meta { color: var(--text-tertiary); font-size: var(--text-xs); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* --- notices -------------------------------------------------------------- */
+
+.notice {
+  margin: var(--space-4) 0; padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  background: var(--surface); font-size: var(--text-sm); line-height: var(--leading-relaxed);
+  box-shadow: var(--shadow-sm);
+}
+.notice--warn { background: var(--warning-subtle); border-color: var(--warning-border); color: var(--warning); }
+.notice--sample { background: var(--info-subtle); border-color: var(--info-border); }
+.notice__title { display: block; font-weight: var(--weight-semibold); margin-bottom: var(--space-1); }
+.notice ul { margin: var(--space-2) 0 0; padding-left: var(--space-5); }
+.notice li { margin-bottom: var(--space-1); }
+
+/* --- controls bar --------------------------------------------------------- */
+
+.controls { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
+.controls__hint { color: var(--text-tertiary); font-size: var(--text-xs); }
+.controls__hint code, .foot code, .emptystate code {
+  font-family: var(--font-mono); font-size: 0.92em;
+  background: var(--surface-subtle); border: 1px solid var(--border);
+  padding: 1px var(--space-1); border-radius: var(--radius-sm);
+}
+
+/* --- empty state ---------------------------------------------------------- */
+
+.emptystate {
+  background: var(--surface); border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg); padding: var(--space-8) var(--space-6);
+  text-align: center;
+}
+.emptystate__title {
+  margin: 0 0 var(--space-2); font-size: var(--text-md); font-weight: var(--weight-semibold);
+}
+.emptystate__text {
+  margin: 0 auto; max-width: 62ch; color: var(--text-secondary);
+  font-size: var(--text-sm); line-height: var(--leading-relaxed);
+}
+.emptystate__actions { margin-top: var(--space-5); display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap; }
+.emptystate__meta { margin: var(--space-5) 0 0; font-size: var(--text-xs); color: var(--text-tertiary); }
+
+/* --- loading -------------------------------------------------------------- */
+
+.loading {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-5) var(--space-6);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+  font-size: var(--text-sm); color: var(--text-secondary);
+}
+/* Inline variant for loading states nested inside a panel that already has its
+   own border/shadow — avoids a box-within-a-box. */
+.loading--inline { padding: var(--space-4) 0; background: none; border: 0; box-shadow: none; }
+.spinner {
+  width: 15px; height: 15px; flex: none;
+  border: 2px solid var(--border-strong); border-top-color: var(--accent);
+  border-radius: var(--radius-full);
+  animation: spin 640ms linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+/* --- match summary bar ---------------------------------------------------- */
+
+.matchbar {
+  display: flex; align-items: center; gap: var(--space-6); flex-wrap: wrap;
+  padding: var(--space-4) var(--space-5); margin-bottom: var(--space-4);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+}
+.matchstat { display: flex; align-items: baseline; gap: var(--space-2); }
+.matchstat__num {
+  font-size: var(--text-lg); font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums; line-height: 1;
+}
+.matchstat__num--muted { color: var(--text-tertiary); }
+.matchstat__num--warn { color: var(--warning); }
+.matchstat__label { font-size: var(--text-sm); color: var(--text-secondary); }
+.matchbar__track {
+  flex: 1; min-width: 120px; height: 5px; border-radius: var(--radius-full);
+  background: var(--surface-subtle); overflow: hidden; display: flex;
+}
+.matchbar__fill { background: var(--accent); transition: width var(--transition-base); }
+.matchbar__rest { background: var(--warning-border); }
+
+/* --- filters -------------------------------------------------------------- */
+
+.filters {
+  display: flex; align-items: flex-end; gap: var(--space-4); flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4); margin-bottom: var(--space-3);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+}
+.filter { display: flex; flex-direction: column; gap: var(--space-1); }
+.filter__label {
+  font-size: var(--text-2xs); font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--text-tertiary);
+}
+.filter__select {
+  padding: var(--space-1) var(--space-2); min-width: 132px;
+  font-family: inherit; font-size: var(--text-sm); color: var(--text);
+  background: var(--bg); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm); cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+.filter__select:hover { border-color: var(--text-tertiary); }
+.filters__status { margin-left: auto; display: flex; align-items: baseline; gap: var(--space-3); }
+.filters__count { font-size: var(--text-sm); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+
+/* --- table ---------------------------------------------------------------- */
+
+.tablewrap {
+  overflow-x: auto; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+.table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.table th {
+  position: sticky; top: 0; z-index: 1;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-subtle);
+  text-align: right; white-space: nowrap; cursor: pointer;
+  font-size: var(--text-2xs); font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide); text-transform: uppercase;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  transition: color var(--transition-fast);
+}
+.table th:hover { color: var(--text); }
+.th--sorted { color: var(--accent); }
+.th__arrow { display: inline-block; width: 11px; font-size: 8px; vertical-align: middle; }
+
+/* Custom header tooltip — replaces native `title` (slow, tiny, easy to miss)
+   with a fast, styled bubble built from the same design tokens. */
+.thtip { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
+
+.thtip__bubble {
+  position: absolute; top: 100%; left: 50%; transform: translateX(-50%) translateY(4px);
+  margin-top: var(--space-2);
+  width: max-content; max-width: 240px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  font-size: var(--text-xs); font-weight: var(--weight-normal);
+  text-transform: none; letter-spacing: normal; white-space: normal; text-align: left;
+  line-height: var(--leading-relaxed);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity var(--transition-fast), visibility var(--transition-fast);
+  z-index: 5;
+}
+
+.thtip:hover .thtip__bubble,
+.thtip:focus-within .thtip__bubble { opacity: 1; visibility: visible; }
+
+/* Centered bubbles overhang the viewport on the first/last header — anchor
+   those to the inside edge instead of the center. */
+.table thead tr th:first-child .thtip__bubble { left: 0; transform: translateY(4px); }
+.table thead tr th:last-child .thtip__bubble { left: auto; right: 0; transform: translateY(4px); }
+
+.table td {
+  padding: var(--space-2) var(--space-3);
+  text-align: right; white-space: nowrap;
+  border-top: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+.ta-left { text-align: left !important; }
+.table tbody tr { cursor: pointer; transition: background var(--transition-fast); }
+.table tbody tr:hover { background: var(--surface-hover); }
+
+/* Long account names and addresses are truncated rather than allowed to push
+   the right-hand columns off screen; the full value stays in the title. */
+.td--client {
+  font-weight: var(--weight-semibold); color: var(--text); font-size: var(--text-base);
+  max-width: 185px; overflow: hidden; text-overflow: ellipsis;
+}
+.td--addr { color: var(--text); max-width: 195px; overflow: hidden; text-overflow: ellipsis; }
+.td--strong { color: var(--text); font-weight: var(--weight-semibold); }
+.td--pests { color: var(--text-secondary); max-width: 145px; overflow: hidden; text-overflow: ellipsis; }
+.td--admin { color: var(--text-tertiary); }
+.td--adj { color: var(--text); font-weight: var(--weight-medium); }
+.td--span { color: var(--text-secondary); }
+
+.th--rank, .td--rank { width: 34px; padding-left: var(--space-4) !important; padding-right: var(--space-1) !important; }
+.td--rank { color: var(--text-tertiary); font-weight: var(--weight-semibold); }
+
+/* Recency band marker beside the last-repeat date. Colour carries meaning here:
+   how current the pattern is directly scales the priority. */
+.dot {
+  display: inline-block; width: 6px; height: 6px; margin-left: var(--space-2);
+  border-radius: var(--radius-full); vertical-align: middle;
+}
+.dot--active { background: var(--accent); }
+.dot--dormant { background: var(--warning); }
+.dot--historic { background: var(--text-tertiary); }
+
+/* Below the volume floor: dimmed in place, never hidden or moved. */
+.tr--low td { color: var(--text-tertiary); }
+.tr--low .td--client, .tr--low .td--addr, .tr--low .td--strong { color: var(--text-tertiary); font-weight: var(--weight-medium); }
+
+/* The row behind the open detail view — set on click, persists independent of
+   hover, and survives sorting/filtering since it's matched by building id
+   rather than row position. Background lives on `td` (not `tr`) so it paints
+   over the row's own hover background rather than fighting it, same trick
+   `.tr--low` already uses. The inset box-shadow gives a crisp left accent bar
+   without the border-collapse quirks a real `border-left` on a table row has. */
+.tr--selected td { background: var(--accent-subtle); }
+.tr--selected td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.tr--selected .td--client { color: var(--accent); }
+
+.table--review td, .table--review th { white-space: normal; }
+.table--review td { text-align: left; }
+
+.badge {
+  display: inline-block; padding: 2px var(--space-2); border-radius: var(--radius-full);
+  background: var(--surface-subtle); border: 1px solid var(--border);
+  color: var(--text-tertiary); font-size: var(--text-2xs); font-weight: var(--weight-medium);
+  letter-spacing: 0; white-space: nowrap; font-variant-numeric: normal;
+}
+.badge--info { background: var(--info-subtle); border-color: var(--info-border); color: var(--text-secondary); margin-left: var(--space-2); }
+.badge--warn { background: var(--warning-subtle); border-color: var(--warning-border); color: var(--warning); }
+
+/* --- building card -------------------------------------------------------- */
+
+.card {
+  margin-top: var(--space-6); padding: var(--space-6);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+  /* Landing spot for the scrollIntoView() in App.jsx — keeps the header off
+     the very top edge of the viewport instead of flush against it. */
+  scroll-margin-top: var(--space-6);
+}
+.card__head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-5); }
+.card__client {
+  font-size: var(--text-xs); font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--accent);
+}
+.card__title { margin: var(--space-1) 0 var(--space-1); font-size: var(--text-lg); font-weight: var(--weight-semibold); letter-spacing: -0.015em; }
+.card__sub { color: var(--text-tertiary); font-size: var(--text-xs); font-variant-numeric: tabular-nums; }
+.card__section {
+  margin: var(--space-6) 0 var(--space-3); padding-bottom: var(--space-2);
+  font-size: var(--text-2xs); font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide); text-transform: uppercase;
+  color: var(--text-secondary); border-bottom: 1px solid var(--border);
+}
+
+.metrics {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+  gap: 1px; background: var(--border);
+  border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden;
+}
+/* Only ever two metrics here — size to content so auto-fit can't leave an
+   empty grid cell showing the divider background. */
+.metrics--admin { display: flex; flex-wrap: wrap; width: max-content; max-width: 100%; }
+.metrics--admin .metric { min-width: 186px; flex: 1; }
+.metric { background: var(--surface); padding: var(--space-3) var(--space-4); }
+.metric--muted .metric__value { color: var(--text-tertiary); }
+.metric__value {
+  font-size: var(--text-xl); font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums; line-height: var(--leading-tight);
+  letter-spacing: -0.02em;
+}
+.metric__label { margin-top: var(--space-1); font-size: var(--text-xs); color: var(--text-secondary); }
+.metric__hint { margin-top: 2px; font-size: var(--text-2xs); color: var(--text-tertiary); }
+
+/* --- caveats: always adjacent to the number they qualify ------------------ */
+
+.caveat {
+  margin: var(--space-3) 0 0; max-width: 82ch;
+  font-size: var(--text-sm); line-height: var(--leading-relaxed); color: var(--text-secondary);
+}
+.caveat--warn {
+  padding: var(--space-3) var(--space-4);
+  background: var(--warning-subtle); border: 1px solid var(--warning-border);
+  border-radius: var(--radius-md); color: var(--warning);
+}
+
+.empty { padding: var(--space-3) 0; color: var(--text-tertiary); font-size: var(--text-sm); }
+.review { margin-top: var(--space-8); }
+.summary { margin: 0 0 var(--space-3); font-size: var(--text-sm); color: var(--text-secondary); }
+
+.foot {
+  margin-top: var(--space-10); padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+  color: var(--text-tertiary); font-size: var(--text-xs);
+  line-height: var(--leading-relaxed); max-width: 100ch;
+}
+
+/* --- violation timeline (Phase 3) ------------------------------------------ */
+
+.timeline { margin-top: var(--space-2); }
+
+.tl { list-style: none; margin: var(--space-4) 0 0; padding: 0; }
+
+.tl-row {
+  display: flex; gap: var(--space-4);
+  padding: var(--space-3) var(--space-3);
+  border-top: 1px solid var(--border-strong);
+  border-left: 3px solid transparent;
+}
+.tl-row:first-child { border-top: 0; }
+
+.tl-row__date {
+  flex: none; width: 84px; padding-top: 1px;
+  font-size: var(--text-sm); font-variant-numeric: tabular-nums; color: var(--text-secondary);
+}
+
+.tl-row__body { flex: 1; min-width: 0; }
+.tl-row__head { display: flex; align-items: baseline; gap: var(--space-2); flex-wrap: wrap; }
+.tl-row__label { font-size: var(--text-base); font-weight: var(--weight-medium); color: var(--text); }
+.tl-row__apt { font-size: var(--text-xs); color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+
+.tl-row__status { margin-top: 2px; font-size: var(--text-xs); }
+.tl-row__status--closed { color: var(--text-secondary); }
+.tl-row__status--open { color: var(--accent); }
+.tl-row__status--pending { color: var(--text-tertiary); }
+.tl-row__status--uncertain { color: var(--warning); }
+
+.tl-row__pairnote {
+  margin-top: var(--space-1); font-size: var(--text-xs); font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+}
+
+/* Each repeat pair gets a colored left rail + faint tint so the two rows that
+   belong together stay identifiable even with several pairs in one timeline. */
+.tl-row--pair-a { border-left-color: var(--pair-a); background: color-mix(in srgb, var(--pair-a) 7%, transparent); }
+.tl-row--pair-b { border-left-color: var(--pair-b); background: color-mix(in srgb, var(--pair-b) 7%, transparent); }
+.tl-row--pair-c { border-left-color: var(--pair-c); background: color-mix(in srgb, var(--pair-c) 7%, transparent); }
+.tl-row--pair-d { border-left-color: var(--pair-d); background: color-mix(in srgb, var(--pair-d) 7%, transparent); }
+.tl-row--pair-a .tl-row__pairnote { color: var(--pair-a); }
+.tl-row--pair-b .tl-row__pairnote { color: var(--pair-b); }
+.tl-row--pair-c .tl-row__pairnote { color: var(--pair-c); }
+.tl-row--pair-d .tl-row__pairnote { color: var(--pair-d); }
+
+/* --- renewal brief (Phase 4) ------------------------------------------------
+   The one place prose belongs: meant to be read and copied, not scanned like
+   a table row, so normal proportional type and generous line-height rather
+   than the tabular/dense styling used everywhere else in this app. */
+
+.brief {
+  margin-top: var(--space-2);
+  background: var(--surface-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+}
+
+.brief__toolbar {
+  display: flex; align-items: center; gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.brief__error { font-size: var(--text-xs); color: var(--warning); }
+
+.brief__para {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--text);
+}
+.brief__para:first-child { font-weight: var(--weight-semibold); }
+.brief__para:last-child { margin-bottom: 0; }
+
+/* --- print: scope output to just the open brief ----------------------------
+   `visibility` rather than `display` so descendant layout (flex/grid children
+   inside .brief) isn't disturbed by the hide/show toggle — the well-established
+   pattern for "print only this one element" out of a larger page. */
+@media print {
+  @page { margin: 0.75in; }
+
+  /* Paper should read the same regardless of which screen theme was active —
+     force light and pure white rather than inheriting a dark-mode background. */
+  body { background: #fff !important; }
+
+  body * { visibility: hidden; }
+  .brief, .brief * { visibility: visible; }
+  .brief {
+    position: absolute; top: 0; left: 0; width: 100%;
+    border: 0; box-shadow: none; background: #fff; padding: 0;
+  }
+  .brief__toolbar { display: none; } /* the copy/download/print buttons themselves don't belong on paper */
+  .brief__para { color: #000; font-size: 11pt; }
+}

@@ -76,7 +76,7 @@ function Row({ row, earlier, laters }) {
   // this row, while a shared later violation may need to show several notes.
   const color = earlier?.color ?? laters?.[0]?.color;
   return (
-    <li className={`tl-row${color ? ` tl-row--${color}` : ''}`}>
+    <li className={`tl-row${color ? ` tl-row--${color}` : ' tl-row--nopair'}`}>
       <div className="tl-row__date">{formatDate(row.insp)}</div>
       <div className="tl-row__body">
         <div className="tl-row__head">

@@ -105,7 +105,9 @@ export function comparePriority(a, b) {
 export function concentrationOf(stats) {
   const units = stats.unitsWithRepeat ?? 0;
   if (units === 0) return { key: 'none', label: '—' };
-  return units === 1
-    ? { key: 'single', label: 'One apartment' }
-    : { key: 'spread', label: `${units} apartments` };
+  // Shortened from "One apartment" / "N apartments" — the table column stays
+  // visible (rather than moved out entirely) because the "Repeats span"
+  // filter filters on this exact value, and hiding the column would leave
+  // that filter's effect invisible in the table.
+  return units === 1 ? { key: 'single', label: '1 apt' } : { key: 'spread', label: `${units} apts` };
 }

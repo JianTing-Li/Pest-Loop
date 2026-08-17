@@ -143,22 +143,30 @@ export default function ClientList({ index, meta, onSelect, selectedBuildingId }
   return (
     <div className="clients">
       {/* The toolbar is redundant while the empty state is showing its own
-          calls to action, so only one of the two is on screen at a time. */}
-      <div className="controls" hidden={showEmpty}>
-        <button type="button" className="btn" onClick={() => fileRef.current?.click()} disabled={!!busy}>
-          Upload client list (CSV)
-        </button>
-        <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={onFile} />
-        <button type="button" className="btn btn--secondary" onClick={useSample} disabled={!!busy}>
-          Try it with sample data
-        </button>
-        <a className="linkbtn" href="data/sample-clients.csv" download>
-          Download CSV template
-        </a>
-        <span className="controls__hint">
-          Columns: <code>client_name</code>, <code>address</code>, optional <code>zip</code>. Extra columns are ignored.
-        </span>
-      </div>
+          calls to action, so only one of the two is on screen at a time.
+          Conditionally rendered rather than hidden via the `hidden` attribute —
+          `.controls { display: flex }` below would silently override a plain
+          `hidden` attribute (author CSS beats the UA stylesheet), which is
+          exactly what happened here before this fix: both the toolbar and the
+          empty state's own buttons rendered at once. The file input stays
+          mounted either way so `fileRef` is always valid to click. */}
+      {!showEmpty ? (
+        <div className="controls">
+          <button type="button" className="btn" onClick={() => fileRef.current?.click()} disabled={!!busy}>
+            Upload client list (CSV)
+          </button>
+          <button type="button" className="btn btn--secondary" onClick={useSample} disabled={!!busy}>
+            Try it with sample data
+          </button>
+          <a className="linkbtn" href="data/sample-clients.csv" download>
+            Download CSV template
+          </a>
+          <span className="controls__hint">
+            Columns: <code>client_name</code>, <code>address</code>, optional <code>zip</code>. Extra columns are ignored.
+          </span>
+        </div>
+      ) : null}
+      <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={onFile} />
 
       {error ? (
         <div className="notice notice--warn">

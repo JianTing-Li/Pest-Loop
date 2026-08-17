@@ -21,13 +21,34 @@ const COLUMNS = [
   { key: 'total', label: 'Violations', help: 'All physical pest violations on record' },
   { key: 'classifiable', label: 'Classifiable cases', help: 'Certified-corrected cases with a full year of follow-up' },
   { key: 'repeats', label: 'Repeats', help: 'Cases re-cited in the same apartment 30–365 days after closing' },
-  { key: 'rate', label: 'Repeat rate', help: 'Repeats ÷ classifiable cases' },
-  { key: 'adjusted', label: 'Adjusted rate', help: 'Repeat rate weighted by how many cases it rests on (Wilson 95% lower bound). A 100% from 12 cases ranks below a 92% from 37.' },
+  { key: 'rate', label: 'Repeat rate', help: 'Repeats ÷ classifiable cases — the number to read first' },
+  { key: 'adjusted', label: 'Adjusted rate', help: 'Supporting context for the ranking only, not a second rate to read: repeat rate weighted by how many cases it rests on (Wilson 95% lower bound), so a 100% from 12 cases ranks below a 92% from 37.' },
   { key: 'lastRepeat', label: 'Last repeat', help: 'Inspection date of the most recent repeat' },
   { key: 'span', label: 'Repeats span', help: 'How many distinct apartments the repeats occurred in' },
   { key: 'pests', label: 'Pest types', align: 'left', help: 'Pest types cited, most frequent first' },
   { key: 'admin', label: 'Admin filings', help: 'Bedbug filing/posting paperwork — never part of the physical signal or the ranking' },
 ];
+
+/** Short, always-visible band text — recency was previously color-only (a 6px dot + hover title). */
+const BAND_TEXT = { active: 'active', dormant: 'dormant', historic: '2y+' };
+
+/**
+ * Truncated cell + hover tooltip. The truncated text and the tooltip bubble
+ * are SIBLINGS, not parent/child — the text span's own `overflow: hidden`
+ * (needed for its ellipsis) would otherwise clip the bubble too, since
+ * `position: absolute` escapes normal-flow layout but not an ancestor's
+ * overflow clipping. Not keyboard-focusable on purpose — see the row's own
+ * tabIndex below; three extra tab stops per row just to reveal a tooltip
+ * would make a long table painful to navigate by keyboard.
+ */
+function Truncated({ value, display }) {
+  return (
+    <span className="thtip">
+      <span className="thtip__text">{display ?? value}</span>
+      <span className="thtip__bubble" role="tooltip">{value}</span>
+    </span>
+  );
+}
 
 export default function ResultsTable({ rows, onSelect, selectedBuildingId }) {
   const [sort, setSort] = useState({ key: 'rank', dir: 'asc' });
@@ -72,6 +93,19 @@ export default function ResultsTable({ rows, onSelect, selectedBuildingId }) {
         : { key, dir: key === 'rank' || key === 'client' || key === 'address' ? 'asc' : 'desc' },
     );
 
+  const toggleOnKey = (key) => (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault(); // ' ' would otherwise also scroll the page
+    toggle(key);
+  };
+
+  const openRow = (building, clientName) => onSelect(building, clientName);
+  const openRowOnKey = (building, clientName) => (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    openRow(building, clientName);
+  };
+
   return (
     <div className="tablewrap">
       <table className="table">
@@ -81,9 +115,19 @@ export default function ResultsTable({ rows, onSelect, selectedBuildingId }) {
               <th
                 key={c.key}
                 className={`${c.align === 'left' ? 'ta-left' : 'ta-right'}${sort.key === c.key ? ' th--sorted' : ''}${c.key === 'rank' ? ' th--rank' : ''}`}
-                onClick={() => toggle(c.key)}
               >
-                <span className="thtip" tabIndex={0}>
+                {/* The click/keyboard handler lives ONLY on this span, not also
+                    on the <th> — a real click on the span bubbles up to a
+                    parent handler too, so having both would toggle sort twice
+                    per click (forward then immediately back: a silent no-op). */}
+                <span
+                  className="thtip"
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Sort by ${c.label}`}
+                  onClick={() => toggle(c.key)}
+                  onKeyDown={toggleOnKey(c.key)}
+                >
                   {c.label}
                   <span className="th__arrow">{sort.key === c.key ? (sort.dir === 'desc' ? '▼' : '▲') : ''}</span>
                   <span className="thtip__bubble" role="tooltip">{c.help}</span>
@@ -100,17 +144,23 @@ export default function ResultsTable({ rows, onSelect, selectedBuildingId }) {
             const rowClass = [unranked ? 'tr--low' : null, isSelected ? 'tr--selected' : null]
               .filter(Boolean)
               .join(' ');
+            const address = displayAddress(row.building.address);
             return (
               <tr
                 key={`${row.client_name}-${row.building.id}`}
                 className={rowClass || undefined}
                 aria-selected={isSelected}
-                onClick={() => onSelect(row.building, row.client_name)}
+                tabIndex={0}
+                aria-label={`${row.client_name}, ${address} — open details`}
+                onClick={() => openRow(row.building, row.client_name)}
+                onKeyDown={openRowOnKey(row.building, row.client_name)}
               >
                 <td className="td--rank">{rank.status === 'ranked' && sort.key === 'rank' ? i + 1 : '·'}</td>
-                <td className="ta-left td--client" title={row.client_name}>{row.client_name}</td>
-                <td className="ta-left td--addr" title={displayAddress(row.building.address)}>
-                  {displayAddress(row.building.address)}
+                <td className="ta-left td--client">
+                  <Truncated value={row.client_name} />
+                </td>
+                <td className="ta-left td--addr">
+                  <Truncated value={address} />
                   {row.matchType === 'partial' ? (
                     <span className="badge badge--info" title="Matched on a partial street name">partial match</span>
                   ) : null}
@@ -118,7 +168,7 @@ export default function ResultsTable({ rows, onSelect, selectedBuildingId }) {
                 <td>{formatCount(stats.total)}</td>
                 <td>{formatCount(stats.classifiable)}</td>
                 <td className={stats.repeats > 0 ? 'td--strong' : undefined}>{formatCount(stats.repeats)}</td>
-                <td>
+                <td className="td--rate">
                   {stats.classifiable === 0 ? (
                     <span className="badge">no closed cases</span>
                   ) : rank.status === 'insufficient' ? (
@@ -133,7 +183,15 @@ export default function ResultsTable({ rows, onSelect, selectedBuildingId }) {
                 <td>
                   {formatDate(stats.lastRepeat)}
                   {rank.band ? (
-                    <span className={`dot dot--${rank.band.key}`} title={`${rank.band.label} — ${rank.band.hint}. Recency weight ×${rank.band.weight.toFixed(2)}`} />
+                    <>
+                      <span className={`dot dot--${rank.band.key}`} aria-hidden="true" />
+                      <span
+                        className="dot__label"
+                        title={`${rank.band.label} — ${rank.band.hint}. Recency weight ×${rank.band.weight.toFixed(2)}`}
+                      >
+                        {BAND_TEXT[rank.band.key]}
+                      </span>
+                    </>
                   ) : null}
                 </td>
                 <td className="td--span">{concentration.label}</td>

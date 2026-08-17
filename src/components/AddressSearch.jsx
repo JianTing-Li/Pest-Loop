@@ -87,8 +87,14 @@ export default function AddressSearch({ index, meta, onSelect }) {
         </button>
       </div>
 
+      <p className="search__hint">
+        See how often closed pest violations came back in the same apartment within a year — the pattern a plain
+        violation count can’t show. Partial street names, <code>St</code> vs <code>Street</code>, and trailing
+        apartment numbers all work.
+      </p>
+
       <div className="search__examples">
-        Try:
+        <span>Try:</span>
         {EXAMPLES.map((ex) => (
           <button key={ex} type="button" className="linkbtn" onClick={() => run(ex)}>
             {ex}
@@ -106,10 +112,21 @@ export default function AddressSearch({ index, meta, onSelect }) {
 
       {submitted?.status === 'none' ? (
         <div className="notice notice--warn">
-          <strong>No match for “{query}”.</strong> This tool covers Bronx buildings with at least one HPD
-          pest violation since {meta?.since ?? '2021'}. A building with a clean record, or one outside the
-          Bronx, will not appear here — that is not the same as a building with no pest history.
-          {submitted.parsed?.houseNumber ? null : ' Try including the house number, e.g. “1229 Franklin Ave”.'}
+          <strong className="notice__title">No building matched “{query}”</strong>
+          Things worth trying:
+          <ul>
+            {submitted.parsed?.houseNumber ? null : (
+              <li>Include the house number — “Franklin Ave” alone isn’t enough to identify a building.</li>
+            )}
+            <li>Drop any apartment or unit number, and check the street name spelling.</li>
+            <li>
+              Confirm the property is in the <strong>Bronx</strong> — this dataset covers that borough only.
+            </li>
+          </ul>
+          <p className="caveat" style={{ color: 'inherit' }}>
+            A building with no HPD pest violations since {meta?.since ?? '2021'} also won’t appear here. That is
+            not the same as a building with a clean record, and it isn’t evidence either way.
+          </p>
         </div>
       ) : null}
 

@@ -16,15 +16,22 @@ export default function App() {
   }, []);
 
   if (state.status === 'loading') {
-    return <div className="app"><p className="empty">Loading building data…</p></div>;
+    return (
+      <div className="app">
+        <div className="loading">
+          <span className="spinner" aria-hidden="true" />
+          <span>Loading Bronx building records…</span>
+        </div>
+      </div>
+    );
   }
   if (state.status === 'error') {
     return (
       <div className="app">
         <div className="notice notice--warn">
-          <strong>Could not load the dataset.</strong> {state.message}
-          <br />
-          Run <code>node scripts/fetch-data.js</code> to generate <code>public/data/</code>.
+          <strong className="notice__title">Could not load the dataset</strong>
+          {state.message}. Run <code>node scripts/fetch-data.js</code> to generate the files in{' '}
+          <code>public/data/</code>.
         </div>
       </div>
     );

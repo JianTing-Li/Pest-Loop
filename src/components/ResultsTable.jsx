@@ -94,7 +94,7 @@ export default function ResultsTable({ rows, meta, onSelect }) {
               onClick={() => onSelect(row.building, row.client_name)}
             >
               <td className="ta-left td--client">{row.client_name}</td>
-              <td className="ta-left">
+              <td className="ta-left td--addr">
                 {displayAddress(row.building.address)}
                 {row.matchType === 'partial' ? <span className="badge badge--info" title="Matched on a partial street name">partial match</span> : null}
               </td>

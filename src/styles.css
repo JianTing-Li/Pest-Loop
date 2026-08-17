@@ -137,7 +137,7 @@ body {
   border-radius: var(--radius-sm);
 }
 
-.app { max-width: 1400px; margin: 0 auto; padding: var(--space-6) var(--space-6) var(--space-12); }
+.app { max-width: 1560px; margin: 0 auto; padding: var(--space-6) var(--space-6) var(--space-12); }
 .hidden { display: none; }
 .mono { font-family: var(--font-mono); }
 
@@ -351,6 +351,30 @@ body {
 .matchbar__fill { background: var(--accent); transition: width var(--transition-base); }
 .matchbar__rest { background: var(--warning-border); }
 
+/* --- filters -------------------------------------------------------------- */
+
+.filters {
+  display: flex; align-items: flex-end; gap: var(--space-4); flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4); margin-bottom: var(--space-3);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+}
+.filter { display: flex; flex-direction: column; gap: var(--space-1); }
+.filter__label {
+  font-size: var(--text-2xs); font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--text-tertiary);
+}
+.filter__select {
+  padding: var(--space-1) var(--space-2); min-width: 132px;
+  font-family: inherit; font-size: var(--text-sm); color: var(--text);
+  background: var(--bg); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm); cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+.filter__select:hover { border-color: var(--text-tertiary); }
+.filters__status { margin-left: auto; display: flex; align-items: baseline; gap: var(--space-3); }
+.filters__count { font-size: var(--text-sm); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+
 /* --- table ---------------------------------------------------------------- */
 
 .tablewrap {
@@ -385,11 +409,31 @@ body {
 .table tbody tr { cursor: pointer; transition: background var(--transition-fast); }
 .table tbody tr:hover { background: var(--surface-hover); }
 
-.td--client { font-weight: var(--weight-semibold); color: var(--text); font-size: var(--text-base); }
-.td--addr { color: var(--text); }
+/* Long account names and addresses are truncated rather than allowed to push
+   the right-hand columns off screen; the full value stays in the title. */
+.td--client {
+  font-weight: var(--weight-semibold); color: var(--text); font-size: var(--text-base);
+  max-width: 185px; overflow: hidden; text-overflow: ellipsis;
+}
+.td--addr { color: var(--text); max-width: 195px; overflow: hidden; text-overflow: ellipsis; }
 .td--strong { color: var(--text); font-weight: var(--weight-semibold); }
-.td--pests { color: var(--text-secondary); max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
+.td--pests { color: var(--text-secondary); max-width: 145px; overflow: hidden; text-overflow: ellipsis; }
 .td--admin { color: var(--text-tertiary); }
+.td--adj { color: var(--text); font-weight: var(--weight-medium); }
+.td--span { color: var(--text-secondary); }
+
+.th--rank, .td--rank { width: 34px; padding-left: var(--space-4) !important; padding-right: var(--space-1) !important; }
+.td--rank { color: var(--text-tertiary); font-weight: var(--weight-semibold); }
+
+/* Recency band marker beside the last-repeat date. Colour carries meaning here:
+   how current the pattern is directly scales the priority. */
+.dot {
+  display: inline-block; width: 6px; height: 6px; margin-left: var(--space-2);
+  border-radius: var(--radius-full); vertical-align: middle;
+}
+.dot--active { background: var(--accent); }
+.dot--dormant { background: var(--warning); }
+.dot--historic { background: var(--text-tertiary); }
 
 /* Below the volume floor: dimmed in place, never hidden or moved. */
 .tr--low td { color: var(--text-tertiary); }

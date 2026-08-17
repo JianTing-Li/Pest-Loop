@@ -5,6 +5,7 @@
  */
 
 import { statsOf, formatRate, formatDate, pestSummary, displayAddress } from '../lib/format.js';
+import { priorityOf } from '../lib/ranking.js';
 import { ADMIN_MEANING, RepeatCaveat } from './Caveat.jsx';
 
 function Metric({ label, value, hint, muted }) {
@@ -21,6 +22,7 @@ export default function BuildingCard({ building, meta, clientName, onClose }) {
   const floor = meta?.volumeFloor ?? 8;
   const phys = statsOf(building, 'physical', floor);
   const admin = statsOf(building, 'administrative', floor);
+  const rank = priorityOf(phys, { floor, asOf: meta?.dataAsOf });
 
   return (
     <section className="card">
@@ -64,10 +66,18 @@ export default function BuildingCard({ building, meta, clientName, onClose }) {
             <Metric
               label="Repeat rate"
               value={phys.lowConfidence ? 'n/a' : formatRate(phys.repeatRate)}
-              hint={phys.lowConfidence ? `below the ${floor}-case reliability floor` : `${phys.repeats} of ${phys.classifiable} cases`}
+              hint={
+                phys.lowConfidence
+                  ? `below the ${floor}-case reliability floor`
+                  : `${phys.repeats} of ${phys.classifiable} cases · adjusted ${rank.adjusted?.toFixed(2)}`
+              }
               muted={phys.lowConfidence}
             />
-            <Metric label="Most recent repeat" value={formatDate(phys.lastRepeat)} />
+            <Metric
+              label="Most recent repeat"
+              value={formatDate(phys.lastRepeat)}
+              hint={rank.band ? rank.band.label.toLowerCase() : undefined}
+            />
             <Metric label="Apartments cited" value={phys.unitsCited} />
           </div>
 

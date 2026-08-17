@@ -9,12 +9,14 @@
  * client has no pest history" when it actually means "we couldn't find them".
  */
 
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { parseClientCSV } from '../lib/csv.js';
 import { matchClients } from '../lib/matching.js';
 import { loadSampleClients } from '../lib/data.js';
-import { displayAddress } from '../lib/format.js';
+import { displayAddress, statsOf } from '../lib/format.js';
+import { priorityOf, concentrationOf } from '../lib/ranking.js';
 import ResultsTable from './ResultsTable.jsx';
+import Filters, { DEFAULT_FILTERS, applyFilters } from './Filters.jsx';
 import { RepeatCaveat } from './Caveat.jsx';
 
 /** Let the browser paint before a synchronous block of work. */
@@ -50,11 +52,31 @@ export default function ClientList({ index, meta, onSelect }) {
   const [isSample, setIsSample] = useState(false);
   const [busy, setBusy] = useState(null);
   const [error, setError] = useState(null);
+  const [filters, setFilters] = useState({ ...DEFAULT_FILTERS });
   const fileRef = useRef(null);
+
+  // Prepared once per result set: stats, priority and concentration for each
+  // matched account. Filtering and sorting both read from this.
+  const prepared = useMemo(() => {
+    if (!result) return [];
+    return result.matched.map((row) => {
+      const stats = statsOf(row.building, 'physical', meta.volumeFloor);
+      return {
+        row,
+        stats,
+        admin: statsOf(row.building, 'administrative', meta.volumeFloor),
+        rank: priorityOf(stats, { floor: meta.volumeFloor, asOf: meta.dataAsOf }),
+        concentration: concentrationOf(stats),
+      };
+    });
+  }, [result, meta]);
+
+  const visible = useMemo(() => applyFilters(prepared, filters), [prepared, filters]);
 
   const run = async (rows, sample) => {
     setError(null);
     setResult(null);
+    setFilters({ ...DEFAULT_FILTERS }); // a new list shouldn't inherit the last one's filters
     // Matching is synchronous, so the loading state has to be painted before it
     // starts — otherwise React batches both and the message is never seen.
     setBusy(`Matching ${rows.length} address${rows.length === 1 ? '' : 'es'} against ${meta.buildings.toLocaleString()} Bronx buildings…`);
@@ -189,7 +211,15 @@ export default function ClientList({ index, meta, onSelect }) {
       {result ? (
         <>
           <MatchBar matched={result.matched.length} total={result.total} needsReview={result.needsReview.length} />
-          <ResultsTable rows={result.matched} meta={meta} onSelect={onSelect} />
+          <Filters filters={filters} onChange={setFilters} shown={visible.length} total={prepared.length} />
+          <ResultsTable rows={visible} onSelect={onSelect} />
+          <p className="caveat">
+            <strong>How the order is decided.</strong> Priority is the repeat rate adjusted for how many cases it
+            rests on, multiplied by a recency weight (×1.00 within 12 months, ×0.85 at 1–2 years, ×0.70 beyond).
+            Every input is a column above, so any row’s position can be checked by hand. Accounts below{' '}
+            {meta.volumeFloor} classifiable cases are listed but never ranked, and administrative filings never
+            affect the order.
+          </p>
           <RepeatCaveat />
 
           {result.needsReview.length > 0 ? (

@@ -1,0 +1,22 @@
+{
+  "name": "pestloop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "fetch-data": "node scripts/fetch-data.js",
+    "probe-data": "node scripts/fetch-data.js --probe"
+  },
+  "dependencies": {
+    "papaparse": "^5.6.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.0.5",
+    "vite": "^8.2.1"
+  }
+}
